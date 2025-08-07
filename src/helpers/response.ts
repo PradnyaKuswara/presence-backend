@@ -7,10 +7,9 @@ type ApiResponse<T> = {
   data: T;
 };
 
-type ApiErrorResponse<E> = {
+type ApiErrorResponse = {
   status: number;
   message: string;
-  error: E;
 };
 
 export const sendResponse = <T>(
@@ -27,16 +26,10 @@ export const sendResponse = <T>(
   return res.status(status).json(response);
 };
 
-export const sendError = <E>(
-  res: Response,
-  status: number,
-  message: string,
-  error: E,
-) => {
-  const errorResponse: ApiErrorResponse<E> = {
+export const sendError = (res: Response, status: number, message: string) => {
+  const errorResponse: ApiErrorResponse = {
     status,
     message,
-    error,
   };
   return res.status(status).json(errorResponse);
 };

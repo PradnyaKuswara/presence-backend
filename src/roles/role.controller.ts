@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { sendError, sendResponse } from 'src/helpers/response';
+import { sendResponse } from 'src/helpers/response';
 import { Response } from 'express';
 import { Role } from './entities/role.entity';
 
@@ -11,31 +11,14 @@ export class RoleController {
 
   @Post()
   async create(@Body() createRoleDto: CreateRoleDto, @Res() res: Response) {
-    try {
-      const role = await this.roleService.create(createRoleDto);
-      return sendResponse<Role>(res, 201, 'succesfully created data', role);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return sendError<Error>(res, 500, 'internal server error', error);
-      }
-    }
+    const role = await this.roleService.create(createRoleDto);
+    return sendResponse<Role>(res, 201, 'succesfully created data', role);
   }
 
   @Get()
   async findAll(@Res() res: Response) {
-    try {
-      const roles = await this.roleService.findAll();
-      return sendResponse<Role[]>(
-        res,
-        200,
-        'succesfully retrieved data',
-        roles,
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return sendError<Error>(res, 500, 'internal server error', error);
-      }
-    }
+    const roles = await this.roleService.findAll();
+    return sendResponse<Role[]>(res, 200, 'succesfully retrieved data', roles);
   }
 
   @Get(':id')
