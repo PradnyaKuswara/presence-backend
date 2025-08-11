@@ -1,13 +1,10 @@
-import { ActivityLog } from 'src/activity-logs/entities/activity-logs.entity';
-import { Class } from 'src/classes/entities/class.entity';
-import { School } from 'src/schools/entities/school.entity';
+import { StudentClassHistory } from 'src/student-class-histories/entities/student-class-history.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
   BeforeInsert,
   OneToMany,
 } from 'typeorm';
@@ -33,11 +30,8 @@ export class Student {
   @Column({ nullable: true })
   phone_number?: string;
 
-  @Column()
-  school_id: number;
-
-  @Column()
-  class_id: number;
+  @Column({ type: 'enum', enum: ['male', 'female'] })
+  gender: 'male' | 'female';
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -45,14 +39,8 @@ export class Student {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => School, (school) => school.students)
-  school: School;
-
-  @ManyToOne(() => Class, (kelas) => kelas.students)
-  class: Class;
-
-  @OneToMany(() => ActivityLog, (activityLog) => activityLog.student)
-  activityLogs: ActivityLog[];
+  @OneToMany(() => StudentClassHistory, (history) => history.student)
+  student_class_histories: StudentClassHistory[];
 
   @BeforeInsert()
   generateUuid() {

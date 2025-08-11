@@ -1,5 +1,4 @@
 import { School } from 'src/schools/entities/school.entity';
-import { StudentClassHistory } from 'src/student-class-histories/entities/student-class-history.entity';
 import {
   BeforeInsert,
   Column,
@@ -7,22 +6,33 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-@Entity('classes')
-export class Class {
+@Entity('settings')
+export class Setting {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'uuid', unique: true })
   uuid: string;
 
+  @Column({ unique: true, name: 'name_app' })
+  nameApp: string;
+
+  @Column({ unique: true, name: 'logo_app' })
+  logoApp: string;
+
   @Column()
-  name: string;
+  school_id: number;
+
+  @Column({ type: 'time', name: 'check_in', default: '07:30:00' })
+  checkIn: string;
+
+  @Column({ type: 'time', name: 'check_out', default: '15:00:00' })
+  checkOut: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -30,14 +40,9 @@ export class Class {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => School)
+  @ManyToOne(() => School, (school) => school.settings)
   @JoinColumn({ name: 'school_id' })
   school: School;
-  @Column()
-  school_id: number;
-
-  @OneToMany(() => StudentClassHistory, (history) => history.class)
-  student_class_histories: StudentClassHistory[];
 
   @BeforeInsert()
   generateUuid() {
