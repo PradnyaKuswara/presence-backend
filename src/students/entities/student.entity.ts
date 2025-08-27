@@ -18,26 +18,35 @@ export class Student {
   @Column({ type: 'uuid', unique: true })
   uuid: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   full_name: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   nisn: string;
 
-  @Column({ nullable: true })
-  email?: string;
+  @Column({ type: 'varchar', nullable: true })
+  email: string | null;
 
-  @Column({ nullable: true })
-  phone_number?: string;
+  @Column({ type: 'varchar' })
+  password: string;
+
+  @Column({ type: 'text', nullable: true })
+  avatar: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  phone_number: string | null;
 
   @Column({ type: 'enum', enum: ['male', 'female'] })
   gender: 'male' | 'female';
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updated_at: Date;
+
+  @UpdateDateColumn({ name: 'deleted_at', nullable: true })
+  deleted_at: Date | null;
 
   @OneToMany(() => StudentClassHistory, (history) => history.student)
   student_class_histories: StudentClassHistory[];

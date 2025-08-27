@@ -8,6 +8,7 @@ import {
   BeforeInsert,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -23,26 +24,29 @@ export class School {
   @Column({ type: 'uuid', unique: true })
   uuid: string;
 
-  @Column()
+  @Column({ unique: true, type: 'varchar' })
   name: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
   address: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   logo: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
   phone: string;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updated_at: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deleted_at: Date | null;
 
   @OneToMany(() => User, (user) => user.school)
   users: User[];

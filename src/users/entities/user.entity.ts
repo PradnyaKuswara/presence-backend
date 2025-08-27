@@ -20,28 +20,28 @@ export class User {
   @Column({ type: 'uuid', unique: true })
   uuid: string;
 
-  @Column()
+  @Column({ type: 'unsigned big int' })
   role_id: number;
 
-  @Column()
+  @Column({ type: 'unsigned big int' })
   school_id: number;
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'varchar' })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ nullable: true })
-  full_name: string;
+  @Column({ nullable: true, type: 'varchar' })
+  full_name?: string;
 
-  @Column({ nullable: true })
-  phone: string;
+  @Column({ nullable: true, type: 'varchar' })
+  phone?: string;
 
-  @Column({ nullable: true })
-  avatar: string;
+  @Column({ nullable: true, type: 'text' })
+  avatar?: string;
 
-  @Column({ default: true })
+  @Column({ default: true, type: 'boolean' })
   isActive: boolean;
 
   @Column({ default: false })

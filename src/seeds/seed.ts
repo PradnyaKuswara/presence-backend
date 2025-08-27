@@ -18,11 +18,7 @@ async function seed() {
   const userRepo = AppDataSource.getRepository(User);
   const schoolRepo = AppDataSource.getRepository(School); // Assuming School entity exists
 
-  await roleRepo.insert([
-    { name: 'Admin' },
-    { name: 'Teacher' },
-    { name: 'Student' },
-  ]);
+  await roleRepo.insert([{ name: 'Super Admin' }, { name: 'Teacher' }]);
 
   const newSchool = new School();
   newSchool.name = 'Example School';
@@ -33,14 +29,13 @@ async function seed() {
 
   await schoolRepo.save(newSchool);
 
-  const adminRole = await roleRepo.findOneBy({ name: 'Admin' });
+  const adminRole = await roleRepo.findOneBy({ name: 'Super Admin' });
   const teacherRole = await roleRepo.findOneBy({ name: 'Teacher' });
-  const studentRole = await roleRepo.findOneBy({ name: 'Student' });
   const school = await schoolRepo.findOne({
     where: { name: 'Example School' },
   });
 
-  if (!adminRole || !teacherRole || !studentRole) {
+  if (!adminRole || !teacherRole) {
     throw new Error('One or more roles not found after insertion');
   }
 
@@ -49,8 +44,8 @@ async function seed() {
   }
 
   const newUser = new User();
-  newUser.full_name = 'admin';
-  newUser.email = 'admin@gmail.com';
+  newUser.full_name = 'superadmin';
+  newUser.email = 'superadmin@gmail.com';
   newUser.password = await encrypt('admin123');
   newUser.role = adminRole;
   newUser.school = school;
