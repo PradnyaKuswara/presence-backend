@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { ROLE } from 'src/constants/roleConstant';
 import { AppDataSource } from 'src/data-source';
 import { encrypt } from 'src/helpers/hash';
 import { Role } from 'src/roles/entities/role.entity';
@@ -21,18 +22,18 @@ async function seed() {
   await roleRepo.insert([{ name: 'Super Admin' }, { name: 'Teacher' }]);
 
   const newSchool = new School();
-  newSchool.name = 'Example School';
+  newSchool.name = 'SMAN 1 Semarapura';
   newSchool.address = '123 Example St';
-  newSchool.email = 'school@gmail.com';
+  newSchool.email = 'ekasma@gmail.com';
   newSchool.phone = '1234567890';
   newSchool.logo = 'logo.png';
 
   await schoolRepo.save(newSchool);
 
-  const adminRole = await roleRepo.findOneBy({ name: 'Super Admin' });
-  const teacherRole = await roleRepo.findOneBy({ name: 'Teacher' });
+  const adminRole = await roleRepo.findOneBy({ name: ROLE.SUPER_ADMIN });
+  const teacherRole = await roleRepo.findOneBy({ name: ROLE.TEACHER });
   const school = await schoolRepo.findOne({
-    where: { name: 'Example School' },
+    where: { name: 'SMAN 1 Semarapura' },
   });
 
   if (!adminRole || !teacherRole) {

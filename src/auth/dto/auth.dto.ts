@@ -1,9 +1,11 @@
+import { mappingRole } from 'src/roles/dto/role.dto';
 import { Role } from 'src/roles/entities/role.entity';
+import { mappingSchool } from 'src/schools/dto/school.dto';
 import { School } from 'src/schools/entities/school.entity';
 import { User } from 'src/users/entities/user.entity';
 
 export type AuthUser = Pick<User, 'uuid' | 'email' | 'full_name'> & {
-  role: Pick<Role, 'id' | 'name'>;
+  role: Pick<Role, 'name'>;
   school: Pick<School, 'uuid' | 'name' | 'address' | 'email' | 'phone'>;
 };
 
@@ -20,17 +22,8 @@ export function mappingAuthUser(user: User): AuthUser {
     uuid: user.uuid,
     email: user.email,
     full_name: user.full_name,
-    role: {
-      id: user.role.id,
-      name: user.role.name,
-    },
-    school: {
-      uuid: user.school.uuid,
-      name: user.school.name,
-      address: user.school.address,
-      email: user.school.email,
-      phone: user.school.phone,
-    },
+    role: mappingRole(user.role),
+    school: mappingSchool(user.school),
   };
 }
 

@@ -16,6 +16,7 @@ import { UserInput } from 'src/users/dto/user.dto';
 import { Student } from 'src/students/entities/student.entity';
 import { StudentService } from 'src/students/student.service';
 import { StudentClassHistoryService } from 'src/student-class-histories/student-class-history.service';
+import { ROLE } from 'src/constants/roleConstant';
 
 @Injectable()
 export class AuthService {
@@ -75,7 +76,10 @@ export class AuthService {
       uuid: USER.uuid,
       email: USER.email,
       fullName: USER.full_name,
-      role: USER.role,
+      role: {
+        id: USER.role.id,
+        name: USER.role.name,
+      },
       school: USER.school,
       isActive: USER.isActive,
       isEmailVerified: USER.isEmailVerified,
@@ -100,8 +104,11 @@ export class AuthService {
       uuid: student.uuid,
       email: student.email,
       fullName: student.full_name,
-      role: 'Student',
-      school: student,
+      role: {
+        id: 0,
+        name: ROLE.STUDENT,
+      },
+      school: student_last_history.school,
       isActive: student_last_history?.is_active,
       isEmailVerified: !!student.email,
       avatar: student.avatar,

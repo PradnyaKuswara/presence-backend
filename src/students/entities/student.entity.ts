@@ -1,3 +1,4 @@
+import { School } from 'src/schools/entities/school.entity';
 import { StudentClassHistory } from 'src/student-class-histories/entities/student-class-history.entity';
 import {
   Entity,
@@ -7,6 +8,8 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -50,6 +53,12 @@ export class Student {
 
   @OneToMany(() => StudentClassHistory, (history) => history.student)
   student_class_histories: StudentClassHistory[];
+
+  @ManyToOne(() => School, (school) => school.students)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
+  @Column({ default: 0 })
+  school_id: number;
 
   @BeforeInsert()
   generateUuid() {

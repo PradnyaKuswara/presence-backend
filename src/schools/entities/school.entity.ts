@@ -3,6 +3,7 @@ import { AttendanceSession } from 'src/attendance-sessions/entities/attendance-s
 import { Class } from 'src/classes/entities/class.entity';
 import { Setting } from 'src/settings/entities/setting.entity';
 import { StudentClassHistory } from 'src/student-class-histories/entities/student-class-history.entity';
+import { Student } from 'src/students/entities/student.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   BeforeInsert,
@@ -65,6 +66,9 @@ export class School {
 
   @OneToMany(() => StudentClassHistory, (item) => item.school)
   student_class_histories: StudentClassHistory[];
+
+  @OneToMany(() => Student, (item) => item.school)
+  students: Student[];
 
   @BeforeInsert()
   generateUuid() {

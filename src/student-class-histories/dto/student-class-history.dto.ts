@@ -1,4 +1,4 @@
-import { IsDateString, IsNotEmpty } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsOptional } from 'class-validator';
 import { StudentClassHistory } from '../entities/student-class-history.entity';
 import { ClassType, mappingClass } from 'src/classes/dto/class.dto';
 import {
@@ -29,6 +29,10 @@ export type StudentClassHistoryInput = Pick<
   | 'is_active'
 >;
 
+export type StudentClassHistoryUpdateInput = StudentClassHistoryInput & {
+  id: number;
+};
+
 export class CreateStudentClassHistoryDto {
   @IsNotEmpty()
   class_id: number;
@@ -42,6 +46,11 @@ export class CreateStudentClassHistoryDto {
 
   @IsDateString()
   end_date: string;
+}
+
+export class UpdateStudentClassHistoryDto extends CreateStudentClassHistoryDto {
+  @IsOptional()
+  id: number;
 }
 
 export function mappingStudentClassHistory(

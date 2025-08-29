@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Student } from './entities/student.entity';
 import { Repository } from 'typeorm';
-import { StudentCreateInput, StudentUpdateInput } from './dto/student.dto';
+import {
+  StudentCreateInput,
+  StudentUpdateInput,
+  UpdateStudentStatusDto,
+} from './dto/student.dto';
 import { Transactional } from 'typeorm-transactional';
 import { StudentClassHistoryService } from 'src/student-class-histories/student-class-history.service';
 import { encrypt } from 'src/helpers/hash';
@@ -49,6 +53,7 @@ export class StudentService {
 
   @Transactional()
   async create(input: StudentCreateInput): Promise<Student> {
+    console.log(input);
     const { student_class_history, ...studentData } = input;
     const student = this.studentRepository.create({
       ...studentData,
@@ -65,14 +70,56 @@ export class StudentService {
     return savedStudent;
   }
 
+  @Transactional()
   async update(input: StudentUpdateInput): Promise<void> {
-    const { uuid, ...rest } = input;
+    const { uuid, student_class_history, ...rest } = input;
 
     const exist = await this.findByUuid(uuid);
     if (!exist) {
-      throw new Error('Student not found');
+      throw new NotFoundException('Student not found');
     }
 
     await this.studentRepository.update({ uuid }, rest);
+
+    if (student_class_history) {
+      const latestHistory =
+        await this.studentClassHistoryService.findLatestByStudentId(exist.id);
+      if (latestHistory) {
+        await this.studentClassHistoryService.update({
+          ...student_class_history,
+          id: latestHistory.id,
+          student_id: exist.id,
+          is_active: latestHistory.is_active,
+        });
+      } else {
+        await this.studentClassHistoryService.create({
+          ...student_class_history,
+          student_id: exist.id,
+          is_active: true,
+        });
+      }
+    }
+  }
+
+  async updateStatus(input: UpdateStudentStatusDto): Promise<void> {
+    const { uuid, is_active: isActive } = input;
+    const exist = await this.findByUuid(uuid);
+    if (!exist) {
+      throw new NotFoundException('Student not found');
+    }
+
+    console.log(exist);
+
+    const latestHistory =
+      await this.studentClassHistoryService.findLatestByStudentId(exist.id);
+
+    console.log(latestHistory);
+
+    if (!latestHistory) throw new Error('Student class history not found');
+
+    await this.studentClassHistoryService.updateIsActiveById(
+      latestHistory.id,
+      isActive,
+    );
   }
 }

@@ -64,7 +64,8 @@ export class AppModule {
       .forRoutes(
         { path: 'classes', method: RequestMethod.ALL },
         { path: 'academic-years', method: RequestMethod.ALL },
-        { path: 'students/*', method: RequestMethod.ALL },
+        { path: 'students', method: RequestMethod.ALL },
+        { path: 'students/(.*)', method: RequestMethod.ALL },
       );
   }
 }

@@ -9,7 +9,6 @@ export class ClassPolicy {
   }
 
   static delete(user: AuthUserPayload, resource: Class): boolean {
-    console.log(user, resource);
     return user.school.id === resource.school_id;
   }
 }
