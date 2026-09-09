@@ -1,5 +1,7 @@
 // src/attendance-sessions/entities/attendance-session.entity.ts
+import { AcademicYear } from 'src/academic-years/entities/academic-year.entity';
 import { Attendance } from 'src/attendances/entities/attendance.entity';
+import { Class } from 'src/classes/entities/class.entity';
 import { School } from 'src/schools/entities/school.entity';
 import {
   Entity,
@@ -8,9 +10,11 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+
 @Entity({ name: 'attendance_sessions' })
 export class AttendanceSession {
   @PrimaryGeneratedColumn()
@@ -34,9 +38,24 @@ export class AttendanceSession {
   @Column()
   school_id: number;
 
+  @ManyToOne(() => Class, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'class_id' })
+  class: Class | null;
+  @Column({ nullable: true })
+  class_id: number | null;
+
+  @ManyToOne(() => AcademicYear, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'academic_year_id' })
+  academic_year: AcademicYear | null;
+  @Column({ nullable: true })
+  academic_year_id: number | null;
+
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
   updated_at: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deleted_at: Date | null;
 }

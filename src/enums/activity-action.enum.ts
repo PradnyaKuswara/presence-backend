@@ -1,6 +1,8 @@
 export enum ActivityAction {
   LOGIN = 'login',
   LOGOUT = 'logout',
+  REGISTER = 'register',
+  RESET_PASSWORD = 'reset_password',
   CREATE_USER = 'create_user',
   UPDATE_ATTENDANCE = 'update_attendance',
   DELETE_USER = 'delete_user',

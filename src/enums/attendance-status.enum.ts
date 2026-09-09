@@ -3,4 +3,6 @@ export enum AttendanceStatus {
   PERMIT = 'permit',
   SICK = 'sick',
   ABSENT = 'absent',
+  LATE = 'late',
 }
+

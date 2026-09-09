@@ -9,6 +9,8 @@ import { RoleModule } from 'src/roles/role.module';
 import { SchoolModule } from 'src/schools/school.module';
 import { StudentModule } from 'src/students/student.module';
 import { StudentClassHistoryModule } from 'src/student-class-histories/student-class-history.module';
+import { ActivityLogModule } from 'src/activity-logs/activity-logs.module';
+
 @Module({
   imports: [
     UserModule,
@@ -16,6 +18,7 @@ import { StudentClassHistoryModule } from 'src/student-class-histories/student-c
     SchoolModule,
     StudentModule,
     StudentClassHistoryModule,
+    ActivityLogModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,

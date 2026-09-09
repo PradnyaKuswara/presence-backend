@@ -12,6 +12,10 @@ import { SchoolModule } from './schools/school.module';
 import { SettingModule } from './settings/setting.module';
 import { AttendanceModule } from './attendances/attendance.module';
 import { StudentModule } from './students/student.module';
+import { ActivityLogModule } from './activity-logs/activity-logs.module';
+import { UserLogModule } from './user-logs/user-logs.module';
+import { StudentLogModule } from './student-logs/student-logs.module';
+import { ClassLogModule } from './class-logs/class-logs.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
 import { AuthMiddleware } from './middlewares/auth.middleware';
@@ -53,6 +57,10 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
     AcademicYearModule,
     AttendanceSessionModule,
     StudentClassHistoryModule,
+    ActivityLogModule,
+    UserLogModule,
+    StudentLogModule,
+    ClassLogModule,
   ],
   controllers: [],
   providers: [],
@@ -66,6 +74,8 @@ export class AppModule {
         { path: 'academic-years', method: RequestMethod.ALL },
         { path: 'students', method: RequestMethod.ALL },
         { path: 'students/(.*)', method: RequestMethod.ALL },
+        { path: 'attendances', method: RequestMethod.ALL },
+        { path: 'attendances/(.*)', method: RequestMethod.ALL },
       );
   }
 }

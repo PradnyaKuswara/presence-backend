@@ -7,48 +7,48 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { ActivityAction } from 'src/enums/activity-action.enum';
 import { Student } from 'src/students/entities/student.entity';
+import { User } from 'src/users/entities/user.entity';
 
-@Entity('activity_logs')
-export class ActivityLog {
+@Entity('student_logs')
+export class StudentLog {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'enum', enum: ActivityAction })
-  action: ActivityAction;
-
-  @Column({ nullable: true })
-  user_id?: number;
-
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'user_id' })
-  user?: User;
 
   @Column({ nullable: true })
   student_id?: number;
 
-  @ManyToOne(() => Student, { nullable: true })
+  @ManyToOne(() => Student, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'student_id' })
   student?: Student;
 
+  @Column({ nullable: true })
+  performed_by_id?: number;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'performed_by_id' })
+  performed_by?: User;
+
+  @Column()
+  action: string;
+
   @Column({ type: 'json', nullable: true })
-  metadata: {
+  metadata?: {
     description?: string;
     before?: unknown;
     after?: unknown;
+    [key: string]: any;
   };
 
   @Column({ nullable: true })
-  ip_address: string;
+  ip_address?: string;
 
   @Column({ nullable: true })
-  device: string;
+  device?: string;
 
   @CreateDateColumn()
-  timestamp: Date;
+  created_at: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-  deleted_at: Date | null;
+  deleted_at?: Date | null;
 }

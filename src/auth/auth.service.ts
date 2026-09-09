@@ -9,6 +9,7 @@ import { User } from 'src/users/entities/user.entity';
 import { UserService } from 'src/users/user.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RoleService } from 'src/roles/role.service';
 import { SchoolService } from 'src/schools/school.service';
 import { Transactional } from 'typeorm-transactional';
@@ -17,6 +18,13 @@ import { Student } from 'src/students/entities/student.entity';
 import { StudentService } from 'src/students/student.service';
 import { StudentClassHistoryService } from 'src/student-class-histories/student-class-history.service';
 import { ROLE } from 'src/constants/roleConstant';
+import { ActivityLogService } from 'src/activity-logs/activity-logs.service';
+import { ActivityAction } from 'src/enums/activity-action.enum';
+
+export interface RequestContextInfo {
+  ip?: string;
+  device?: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -27,6 +35,7 @@ export class AuthService {
     private studentService: StudentService,
     private studentClassHistoriyesService: StudentClassHistoryService,
     private jwtService: JwtService,
+    private activityLogService: ActivityLogService,
   ) {}
 
   async validateUser(input: LoginDto): Promise<User> {
@@ -71,7 +80,10 @@ export class AuthService {
     return student;
   }
 
-  login(USER: User): { access_token: string } {
+  async login(
+    USER: User,
+    reqInfo?: RequestContextInfo,
+  ): Promise<{ access_token: string }> {
     const payload = {
       uuid: USER.uuid,
       email: USER.email,
@@ -85,12 +97,24 @@ export class AuthService {
       isEmailVerified: USER.isEmailVerified,
       avatar: USER.avatar,
     };
+
+    await this.activityLogService.log({
+      action: ActivityAction.LOGIN,
+      user_id: USER.id,
+      metadata: { description: `User ${USER.email} logged in successfully` },
+      ip_address: reqInfo?.ip,
+      device: reqInfo?.device,
+    });
+
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async loginStudent(student: Student): Promise<{ access_token: string }> {
+  async loginStudent(
+    student: Student,
+    reqInfo?: RequestContextInfo,
+  ): Promise<{ access_token: string }> {
     const student_last_history =
       await this.studentClassHistoriyesService.findLatestByStudentId(
         student.id,
@@ -113,13 +137,27 @@ export class AuthService {
       isEmailVerified: !!student.email,
       avatar: student.avatar,
     };
+
+    await this.activityLogService.log({
+      action: ActivityAction.LOGIN,
+      student_id: student.id,
+      metadata: {
+        description: `Student ${student.full_name} (${student.nisn}) logged in successfully`,
+      },
+      ip_address: reqInfo?.ip,
+      device: reqInfo?.device,
+    });
+
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
   @Transactional()
-  async register(input: RegisterDto): Promise<User> {
+  async register(
+    input: RegisterDto,
+    reqInfo?: RequestContextInfo,
+  ): Promise<User> {
     const school = await this.schoolService.create(input.school);
     const role = await this.roleService.findByName('Super Admin');
 
@@ -139,6 +177,58 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    await this.activityLogService.log({
+      action: ActivityAction.REGISTER,
+      user_id: user.id,
+      metadata: {
+        description: `User ${user.email} registered school ${school.name}`,
+      },
+      ip_address: reqInfo?.ip,
+      device: reqInfo?.device,
+    });
+
     return user;
+  }
+
+  async resetPassword(
+    input: ResetPasswordDto,
+    reqInfo?: RequestContextInfo,
+  ): Promise<void> {
+    const user = await this.userService.findByEmail(input.email);
+    if (user) {
+      const hashedPassword = await encrypt(input.newPassword);
+      await this.userService.updatePassword(user.id, hashedPassword);
+
+      await this.activityLogService.log({
+        action: ActivityAction.RESET_PASSWORD,
+        user_id: user.id,
+        metadata: {
+          description: `Password reset successfully for user ${user.email}`,
+        },
+        ip_address: reqInfo?.ip,
+        device: reqInfo?.device,
+      });
+      return;
+    }
+
+    const student = await this.studentService.findByEmail(input.email);
+    if (student) {
+      const hashedPassword = await encrypt(input.newPassword);
+      await this.studentService.updatePassword(student.id, hashedPassword);
+
+      await this.activityLogService.log({
+        action: ActivityAction.RESET_PASSWORD,
+        student_id: student.id,
+        metadata: {
+          description: `Password reset successfully for student ${student.email}`,
+        },
+        ip_address: reqInfo?.ip,
+        device: reqInfo?.device,
+      });
+      return;
+    }
+
+    throw new NotFoundException('Account not found with provided email');
   }
 }

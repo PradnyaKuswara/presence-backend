@@ -1,8 +1,10 @@
+import { AttendanceType } from 'src/enums/attendance-type.enum';
 import { School } from 'src/schools/entities/school.entity';
 import {
   BeforeInsert,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -28,6 +30,14 @@ export class Setting {
   @Column()
   school_id: number;
 
+  @Column({
+    type: 'enum',
+    enum: AttendanceType,
+    default: AttendanceType.DAILY,
+    name: 'attendance_type',
+  })
+  attendanceType: AttendanceType;
+
   @Column({ type: 'time', name: 'check_in', default: '07:30:00' })
   checkIn: string;
 
@@ -39,6 +49,9 @@ export class Setting {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date | null;
 
   @ManyToOne(() => School, (school) => school.settings)
   @JoinColumn({ name: 'school_id' })

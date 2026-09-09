@@ -6,6 +6,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   BeforeInsert,
   OneToMany,
   ManyToOne,
@@ -48,7 +49,7 @@ export class Student {
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
 
-  @UpdateDateColumn({ name: 'deleted_at', nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deleted_at: Date | null;
 
   @OneToMany(() => StudentClassHistory, (history) => history.student)

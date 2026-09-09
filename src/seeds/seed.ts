@@ -6,8 +6,10 @@ import { Role } from 'src/roles/entities/role.entity';
 import { School } from 'src/schools/entities/school.entity';
 import { User } from 'src/users/entities/user.entity';
 
-async function seed() {
-  await AppDataSource.initialize();
+export async function runSeed() {
+  if (!AppDataSource.isInitialized) {
+    await AppDataSource.initialize();
+  }
 
   await AppDataSource.query('TRUNCATE TABLE "users" RESTART IDENTITY CASCADE');
   await AppDataSource.query('TRUNCATE TABLE "roles" RESTART IDENTITY CASCADE');
@@ -17,7 +19,7 @@ async function seed() {
 
   const roleRepo = AppDataSource.getRepository(Role);
   const userRepo = AppDataSource.getRepository(User);
-  const schoolRepo = AppDataSource.getRepository(School); // Assuming School entity exists
+  const schoolRepo = AppDataSource.getRepository(School);
 
   await roleRepo.insert([{ name: 'Super Admin' }, { name: 'Teacher' }]);
 
@@ -54,10 +56,19 @@ async function seed() {
   newUser.isEmailVerified = true;
   await userRepo.save(newUser);
 
-  await AppDataSource.destroy();
   console.log('Database seeded successfully');
 }
 
-seed().catch((error) => {
-  console.error('Error during data source initialization:', error);
-});
+if (require.main === module) {
+  runSeed()
+    .then(async () => {
+      if (AppDataSource.isInitialized) {
+        await AppDataSource.destroy();
+      }
+    })
+    .catch((error) => {
+      console.error('Error during data seeding:', error);
+      process.exit(1);
+    });
+}
+

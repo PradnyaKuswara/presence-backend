@@ -7,7 +7,7 @@ import {
   AttendanceSessionUpdateInput,
 } from './dto/attendance.dto';
 
-Injectable();
+@Injectable()
 export class AttendanceSessionService {
   constructor(
     @InjectRepository(AttendanceSession)
@@ -22,6 +22,23 @@ export class AttendanceSessionService {
 
   async findOneById(id: number): Promise<AttendanceSession | null> {
     return this.attendanceSessionRepository.findOne({ where: { id } });
+  }
+
+  async findActiveSession(
+    schoolId: number,
+    classId: number,
+    currentTime: string,
+  ): Promise<AttendanceSession | null> {
+    return this.attendanceSessionRepository
+      .createQueryBuilder('session')
+      .where('session.school_id = :schoolId', { schoolId })
+      .andWhere(
+        '(session.class_id = :classId OR session.class_id IS NULL)',
+        { classId },
+      )
+      .andWhere('session.start_time <= :currentTime', { currentTime })
+      .andWhere('session.end_time >= :currentTime', { currentTime })
+      .getOne();
   }
 
   async create(

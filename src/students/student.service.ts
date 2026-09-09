@@ -122,4 +122,8 @@ export class StudentService {
       isActive,
     );
   }
+
+  async updatePassword(id: number, password: string): Promise<void> {
+    await this.studentRepository.update(id, { password });
+  }
 }
