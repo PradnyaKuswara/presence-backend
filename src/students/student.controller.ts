@@ -34,11 +34,13 @@ export class StudentController {
     @AuthUser() user: AuthUserPayload,
     @Res() res: Response,
   ) {
-    const students = await this.studentService.findBySchoolId(user.school.id);
+    const students = await this.studentService.findBySchoolId(
+      user.school?.id ?? 0,
+    );
     return sendResponse<StudentType[]>(
       res,
       200,
-      'successfully get students',
+      'Students retrieved successfully',
       students.map(mappingStudent),
     );
   }
@@ -51,14 +53,14 @@ export class StudentController {
     @Res() res: Response,
   ) {
     const students = await this.studentService.findBySchoolIdWithHistories(
-      user.school.id,
+      user.school?.id ?? 0,
     );
 
     console.log(students);
     return sendResponse<StudentType[]>(
       res,
       200,
-      'successfully get students with histories',
+      'Students with histories retrieved successfully',
       students.map(mappingStudent),
     );
   }
@@ -73,17 +75,17 @@ export class StudentController {
   ) {
     const student = await this.studentService.create({
       ...input,
-      school_id: user.school.id,
+      school_id: user.school?.id ?? 0,
       student_class_history: {
         ...input.student_class_history,
-        school_id: user.school.id,
+        school_id: user.school?.id ?? 0,
       },
     });
 
     return sendResponse<StudentType>(
       res,
       201,
-      'successfully created student',
+      'Student created successfully',
       mappingStudent(student),
     );
   }
@@ -101,11 +103,11 @@ export class StudentController {
       student_class_history: input.student_class_history
         ? {
             ...input.student_class_history,
-            school_id: user.school.id,
+            school_id: user.school?.id ?? 0,
           }
         : undefined,
     });
-    return sendResponse(res, 200, 'successfully updated student', null);
+    return sendResponse(res, 200, 'Student updated successfully', null);
   }
 
   @Patch('/status')
@@ -117,6 +119,6 @@ export class StudentController {
   ) {
     console.log(input);
     await this.studentService.updateStatus(input);
-    return sendResponse(res, 200, 'successfully updated student status', null);
+    return sendResponse(res, 200, 'Student status updated successfully', null);
   }
 }

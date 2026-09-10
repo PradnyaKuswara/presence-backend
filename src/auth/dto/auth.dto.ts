@@ -6,7 +6,7 @@ import { User } from 'src/users/entities/user.entity';
 
 export type AuthUser = Pick<User, 'uuid' | 'email' | 'full_name'> & {
   role: Pick<Role, 'name'>;
-  school: Pick<School, 'uuid' | 'name' | 'address' | 'email' | 'phone'>;
+  school: Pick<School, 'uuid' | 'name' | 'address' | 'email' | 'phone'> | null;
 };
 
 export type AuthUserPayload = Pick<
@@ -14,7 +14,7 @@ export type AuthUserPayload = Pick<
   'uuid' | 'email' | 'full_name' | 'isActive' | 'isEmailVerified' | 'avatar'
 > & {
   role: Role;
-  school: School;
+  school?: School | null;
 };
 
 export function mappingAuthUser(user: User): AuthUser {
@@ -23,7 +23,7 @@ export function mappingAuthUser(user: User): AuthUser {
     email: user.email,
     full_name: user.full_name,
     role: mappingRole(user.role),
-    school: mappingSchool(user.school),
+    school: user.school ? mappingSchool(user.school) : null,
   };
 }
 
@@ -36,6 +36,6 @@ export function mappingAuthUserPayload(user: User): AuthUserPayload {
     isEmailVerified: user.isEmailVerified,
     avatar: user.avatar,
     role: user.role,
-    school: user.school,
+    school: user.school || null,
   };
 }

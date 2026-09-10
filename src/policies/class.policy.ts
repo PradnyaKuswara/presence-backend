@@ -5,10 +5,10 @@ import { Class } from 'src/classes/entities/class.entity';
 
 export class ClassPolicy {
   static update(user: AuthUserPayload, resource: Class): boolean {
-    return user.school.id === resource.school_id;
+    return user.school?.id === resource.school_id;
   }
 
   static delete(user: AuthUserPayload, resource: Class): boolean {
-    return user.school.id === resource.school_id;
+    return user.school?.id === resource.school_id;
   }
 }

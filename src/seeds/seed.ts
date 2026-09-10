@@ -11,50 +11,63 @@ export async function runSeed() {
     await AppDataSource.initialize();
   }
 
-  await AppDataSource.query('TRUNCATE TABLE "users" RESTART IDENTITY CASCADE');
-  await AppDataSource.query('TRUNCATE TABLE "roles" RESTART IDENTITY CASCADE');
+  const schema = process.env.DB_SCHEMA || 'public';
+  await AppDataSource.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
   await AppDataSource.query(
-    'TRUNCATE TABLE "schools" RESTART IDENTITY CASCADE',
+    `TRUNCATE TABLE "${schema}"."users" RESTART IDENTITY CASCADE`,
+  );
+  await AppDataSource.query(
+    `TRUNCATE TABLE "${schema}"."roles" RESTART IDENTITY CASCADE`,
+  );
+  await AppDataSource.query(
+    `TRUNCATE TABLE "${schema}"."schools" RESTART IDENTITY CASCADE`,
+  );
+
+  // Insert Global System School with ID 0 for Global Super Admin
+  await AppDataSource.query(
+    `INSERT INTO "${schema}"."schools" ("id", "uuid", "name", "address", "email", "phone") VALUES (0, '00000000-0000-0000-0000-000000000000', 'Global System', 'Global System', 'global@presence.com', '0')`,
   );
 
   const roleRepo = AppDataSource.getRepository(Role);
   const userRepo = AppDataSource.getRepository(User);
   const schoolRepo = AppDataSource.getRepository(School);
 
-  await roleRepo.insert([{ name: 'Super Admin' }, { name: 'Teacher' }]);
+  // Seed roles: Super Admin Global, Super Admin, Admin, User
+  await roleRepo.insert([
+    { name: ROLE.SUPER_ADMIN_GLOBAL },
+    { name: ROLE.SUPER_ADMIN },
+    { name: ROLE.ADMIN },
+    { name: ROLE.USER },
+  ]);
 
-  const newSchool = new School();
-  newSchool.name = 'SMAN 1 Semarapura';
-  newSchool.address = '123 Example St';
-  newSchool.email = 'ekasma@gmail.com';
-  newSchool.phone = '1234567890';
-  newSchool.logo = 'logo.png';
+  // Seed default school
+  const defaultSchool = new School();
+  defaultSchool.name = 'SMAN 1 Semarapura';
+  defaultSchool.address = 'Jl. Flamboyan No. 1, Semarapura';
+  defaultSchool.email = 'ekasma@gmail.com';
+  defaultSchool.phone = '0366123456';
+  defaultSchool.logo = 'logo.png';
+  await schoolRepo.save(defaultSchool);
 
-  await schoolRepo.save(newSchool);
-
-  const adminRole = await roleRepo.findOneBy({ name: ROLE.SUPER_ADMIN });
-  const teacherRole = await roleRepo.findOneBy({ name: ROLE.TEACHER });
-  const school = await schoolRepo.findOne({
-    where: { name: 'SMAN 1 Semarapura' },
+  const superAdminGlobalRole = await roleRepo.findOneBy({
+    name: ROLE.SUPER_ADMIN_GLOBAL,
   });
 
-  if (!adminRole || !teacherRole) {
-    throw new Error('One or more roles not found after insertion');
+  if (!superAdminGlobalRole) {
+    throw new Error('Super Admin Global role not found after insertion');
   }
 
-  if (!school) {
-    throw new Error('School not found after insertion');
-  }
+  // Seed 1 user: Super Admin Global (Password: Password1, school_id: 0)
+  const superAdminGlobalUser = new User();
+  superAdminGlobalUser.full_name = 'Super Admin Global';
+  superAdminGlobalUser.email = 'superadminglobal@gmail.com';
+  superAdminGlobalUser.password = await encrypt('Password1');
+  superAdminGlobalUser.role = superAdminGlobalRole;
+  superAdminGlobalUser.school_id = 0;
+  superAdminGlobalUser.isActive = true;
+  superAdminGlobalUser.isEmailVerified = true;
 
-  const newUser = new User();
-  newUser.full_name = 'superadmin';
-  newUser.email = 'superadmin@gmail.com';
-  newUser.password = await encrypt('admin123');
-  newUser.role = adminRole;
-  newUser.school = school;
-  newUser.isActive = true;
-  newUser.isEmailVerified = true;
-  await userRepo.save(newUser);
+  await userRepo.save(superAdminGlobalUser);
 
   console.log('Database seeded successfully');
 }
@@ -71,4 +84,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-

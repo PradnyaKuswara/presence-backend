@@ -12,13 +12,13 @@ export class RoleController {
   @Post()
   async create(@Body() createRoleDto: CreateRoleDto, @Res() res: Response) {
     const role = await this.roleService.create(createRoleDto);
-    return sendResponse<Role>(res, 201, 'succesfully created data', role);
+    return sendResponse<Role>(res, 201, 'Role created successfully', role);
   }
 
   @Get()
   async findAll(@Res() res: Response) {
     const roles = await this.roleService.findAll();
-    return sendResponse<Role[]>(res, 200, 'succesfully retrieved data', roles);
+    return sendResponse<Role[]>(res, 200, 'Roles retrieved successfully', roles);
   }
 
   @Get(':id')

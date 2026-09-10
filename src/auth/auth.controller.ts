@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
@@ -30,12 +30,9 @@ export class AuthController {
     const user = await this.authService.validateUser(input);
     const { access_token } = await this.authService.login(user, reqInfo);
 
-    return sendResponse<{ access_token: string }>(
-      res,
-      200,
-      'succesfully Login',
-      { access_token },
-    );
+    return sendResponse<{ token: string }>(res, 200, 'Successfully logged in', {
+      token: access_token,
+    });
   }
 
   @Post('login/student')
@@ -54,9 +51,27 @@ export class AuthController {
     return sendResponse<{ access_token: string }>(
       res,
       200,
-      'succesfully Login',
+      'Successfully logged in',
       { access_token },
     );
+  }
+
+  @Post('login/admin-global')
+  async loginAdminGlobal(
+    @Body() input: LoginDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const reqInfo = this.extractReqInfo(req);
+    const user = await this.authService.validateUserAdminGlobal(input);
+    const { access_token } = await this.authService.loginUserAdminGlobal(
+      user,
+      reqInfo,
+    );
+
+    return sendResponse<{ token: string }>(res, 200, 'Successfully logged in', {
+      token: access_token,
+    });
   }
 
   @Post('register')
@@ -71,7 +86,7 @@ export class AuthController {
     return sendResponse<AuthUser>(
       res,
       201,
-      'succesfully created data',
+      'Successfully created data',
       mappingAuthUser(user),
     );
   }
@@ -86,5 +101,14 @@ export class AuthController {
     await this.authService.resetPassword(input, reqInfo);
 
     return sendResponse(res, 200, 'Password successfully reset', null);
+  }
+
+  @Get('me')
+  async me(@Req() req: Request, @Res() res: Response) {
+    const user = req['user'];
+    if (!user) {
+      return sendResponse(res, 401, 'User not logged in', null);
+    }
+    return sendResponse(res, 200, 'User profile fetched successfully', user);
   }
 }

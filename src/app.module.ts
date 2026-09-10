@@ -16,9 +16,11 @@ import { ActivityLogModule } from './activity-logs/activity-logs.module';
 import { UserLogModule } from './user-logs/user-logs.module';
 import { StudentLogModule } from './student-logs/student-logs.module';
 import { ClassLogModule } from './class-logs/class-logs.module';
+import { StorageModule } from './storage/storage.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
 import { AuthMiddleware } from './middlewares/auth.middleware';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
           username: process.env.DB_USERNAME,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_NAME,
+          schema: process.env.DB_SCHEMA || 'public',
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: false,
           autoLoadEntities: true,
@@ -47,6 +50,7 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
         return dataSource;
       },
     }),
+    StorageModule,
     RoleModule,
     AuthModule,
     ClassModule,
@@ -62,7 +66,7 @@ import { AuthMiddleware } from './middlewares/auth.middleware';
     StudentLogModule,
     ClassLogModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {
@@ -70,12 +74,16 @@ export class AppModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
+        { path: 'auth/me', method: RequestMethod.GET },
+        { path: 'auth/reset-password', method: RequestMethod.POST },
         { path: 'classes', method: RequestMethod.ALL },
         { path: 'academic-years', method: RequestMethod.ALL },
         { path: 'students', method: RequestMethod.ALL },
         { path: 'students/(.*)', method: RequestMethod.ALL },
         { path: 'attendances', method: RequestMethod.ALL },
         { path: 'attendances/(.*)', method: RequestMethod.ALL },
+        { path: 'schools', method: RequestMethod.ALL },
+        { path: 'schools/(.*)', method: RequestMethod.ALL },
       );
   }
 }

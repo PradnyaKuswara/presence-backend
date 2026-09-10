@@ -24,8 +24,8 @@ export class User {
   @Column({ type: 'unsigned big int' })
   role_id: number;
 
-  @Column({ type: 'unsigned big int' })
-  school_id: number;
+  @Column({ type: 'unsigned big int', nullable: true, default: 0 })
+  school_id?: number | null;
 
   @Column({ unique: true, type: 'varchar' })
   email: string;
@@ -61,9 +61,9 @@ export class User {
   @JoinColumn({ name: 'role_id' })
   role: Role;
 
-  @ManyToOne(() => School, (school) => school.users)
+  @ManyToOne(() => School, (school) => school.users, { nullable: true })
   @JoinColumn({ name: 'school_id' })
-  school: School;
+  school?: School | null;
 
   @BeforeInsert()
   generateUuid() {

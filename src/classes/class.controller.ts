@@ -33,11 +33,11 @@ export class ClassController {
     @Res() res: Response,
     @AuthUser() user: AuthUserPayload,
   ) {
-    const classes = await this.classService.getAllBySchoolId(user.school.id);
+    const classes = await this.classService.getAllBySchoolId(user.school?.id ?? 0);
     return sendResponse<ClassType[]>(
       res,
       200,
-      'succesfully retrieved data',
+      'Classes retrieved successfully',
       classes.map(mappingClass),
     );
   }
@@ -50,12 +50,12 @@ export class ClassController {
   ) {
     const newClass = await this.classService.create({
       ...createClassDto,
-      school_id: user.school.id,
+      school_id: user.school?.id ?? 0,
     });
     return sendResponse<ClassType>(
       res,
       201,
-      'succesfully created data',
+      'Class created successfully',
       mappingClass(newClass),
     );
   }
@@ -68,7 +68,7 @@ export class ClassController {
       uuid: updateClassDto.uuid,
       name: updateClassDto.name,
     });
-    return sendResponse(res, 200, 'succesfully updated data', null);
+    return sendResponse(res, 200, 'Class updated successfully', null);
   }
 
   @Delete()
@@ -76,6 +76,6 @@ export class ClassController {
   @Policy(ClassPolicy, 'delete', 'uuid', ClassService)
   async delete(@Body() deleteClassDto: DeleteClassDto, @Res() res: Response) {
     await this.classService.delete(deleteClassDto.uuid);
-    return sendResponse(res, 200, 'succesfully deleted data', null);
+    return sendResponse(res, 200, 'Class deleted successfully', null);
   }
 }

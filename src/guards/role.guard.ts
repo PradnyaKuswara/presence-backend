@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
@@ -8,11 +13,15 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<string[]>(
-      'roles',
-      context.getHandler(),
-    );
-    if (!requiredRoles) {
+    const requiredRoles =
+      this.reflector.getAllAndOverride<string[]>('roles', [
+        context.getHandler(),
+        context.getClass(),
+      ]) ||
+      this.reflector.get<string[]>('roles', context.getHandler()) ||
+      this.reflector.get<string[]>('roles', context.getClass());
+
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
@@ -22,7 +31,7 @@ export class RolesGuard implements CanActivate {
     const isAccept = requiredRoles.includes(user?.role?.name);
 
     if (!isAccept) {
-      throw new Error('You do not have permission (RolesGuard)');
+      throw new ForbiddenException('Akses ditolak: Role tidak memiliki izin');
     }
 
     return isAccept;

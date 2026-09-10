@@ -39,12 +39,12 @@ export class AcademicYearController {
   ) {
     console.log(user);
     const academicYears = await this.academicYearService.getAllBySchoolId(
-      user.school.id,
+      user.school?.id ?? 0,
     );
     return sendResponse<AcademicYearType[]>(
       res,
       200,
-      'succesfully retrieved data',
+      'Academic years retrieved successfully',
       academicYears.map(mappingAcademicYear),
     );
   }
@@ -59,10 +59,10 @@ export class AcademicYearController {
   ) {
     const newAcademicYear = await this.academicYearService.create({
       ...createAcademicYearDto,
-      school_id: user.school.id,
+      school_id: user.school?.id ?? 0,
       is_active: true,
     });
-    return sendResponse(res, 201, 'succesfully created data', newAcademicYear);
+    return sendResponse(res, 201, 'Academic year created successfully', newAcademicYear);
   }
 
   @Patch()
@@ -74,7 +74,7 @@ export class AcademicYearController {
     @Res() res: Response,
   ) {
     await this.academicYearService.update(updateAcademicYearDto);
-    return sendResponse(res, 200, 'succesfully updated data', null);
+    return sendResponse(res, 200, 'Academic year updated successfully', null);
   }
 
   @Delete()
@@ -86,6 +86,6 @@ export class AcademicYearController {
     @Res() res: Response,
   ) {
     await this.academicYearService.delete(deleteAcademicYearDto.id);
-    return sendResponse(res, 200, 'succesfully deleted data', null);
+    return sendResponse(res, 200, 'Academic year deleted successfully', null);
   }
 }

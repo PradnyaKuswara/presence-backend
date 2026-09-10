@@ -231,4 +231,53 @@ export class AuthService {
 
     throw new NotFoundException('Account not found with provided email');
   }
+
+  async validateUserAdminGlobal(input: LoginDto): Promise<User> {
+    const user = await this.userService.findByEmail(input.email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await compare(input.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.school_id !== null && user.role.name !== ROLE.SUPER_ADMIN_GLOBAL) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    return user;
+  }
+
+  async loginUserAdminGlobal(
+    user: User,
+    reqInfo?: RequestContextInfo,
+  ): Promise<{ access_token: string }> {
+    const payload = {
+      uuid: user.uuid,
+      email: user.email,
+      fullName: user.full_name,
+      role: {
+        id: user.role.id,
+        name: user.role.name,
+      },
+      school: user.school,
+      isActive: user.isActive,
+      isEmailVerified: user.isEmailVerified,
+      avatar: user.avatar,
+    };
+
+    await this.activityLogService.log({
+      action: ActivityAction.LOGIN,
+      user_id: user.id,
+      metadata: { description: `User ${user.email} logged in successfully` },
+      ip_address: reqInfo?.ip,
+      device: reqInfo?.device,
+    });
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 }
