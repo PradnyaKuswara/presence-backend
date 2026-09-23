@@ -33,7 +33,10 @@ export class SchoolService {
       .createQueryBuilder('school')
       .loadRelationCountAndMap('school.students_count', 'school.students')
       .loadRelationCountAndMap('school.classes_count', 'school.classes')
-      .loadRelationCountAndMap('school.users_count', 'school.users');
+      .loadRelationCountAndMap('school.users_count', 'school.users')
+      .andWhere('school.id != :id', {
+        id: '0',
+      });
 
     if (query.search && query.search.trim() !== '') {
       const search = `%${query.search.trim()}%`;

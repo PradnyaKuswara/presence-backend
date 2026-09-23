@@ -3,8 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
+  Put,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -12,80 +15,150 @@ import { AcademicYearService } from './academic-year.service';
 import { AuthUserPayload } from 'src/auth/dto/auth.dto';
 import { AuthUser } from 'src/decorators/auth.decorator';
 import {
+  AcademicYearPaginatedResponseDto,
+  AcademicYearQueryDto,
   AcademicYearType,
   CreateAcademicYearDto,
-  DeleteAcademicYearDto,
   mappingAcademicYear,
   UpdateAcademicYearDto,
 } from './dto/academic-year.dto';
 import { sendResponse } from 'src/helpers/response';
 import { Response } from 'express';
-import { PolicyGuard } from 'src/guards/policy.guard';
-import { Policy } from 'src/decorators/policy.decorator';
-import { AcademicYearPolicy } from 'src/policies/academic-year.policy';
 import { RolesGuard } from 'src/guards/role.guard';
 import { Roles } from 'src/decorators/role.decorator';
+import { ROLE } from 'src/constants/roleConstant';
 
 @Controller('academic-years')
+@UseGuards(RolesGuard)
+@Roles(ROLE.SUPER_ADMIN_GLOBAL, ROLE.SUPER_ADMIN)
 export class AcademicYearController {
   constructor(private readonly academicYearService: AcademicYearService) {}
 
   @Get()
-  @Roles('Super Admin')
-  @UseGuards(RolesGuard)
-  async findAllBySchoolId(
+  async findAll(
+    @Query() query: AcademicYearQueryDto,
     @Res() res: Response,
     @AuthUser() user: AuthUserPayload,
   ) {
-    console.log(user);
-    const academicYears = await this.academicYearService.getAllBySchoolId(
-      user.school?.id ?? 0,
-    );
-    return sendResponse<AcademicYearType[]>(
+    const result = await this.academicYearService.findAll(query, user);
+    return sendResponse<AcademicYearPaginatedResponseDto>(
       res,
       200,
       'Academic years retrieved successfully',
-      academicYears.map(mappingAcademicYear),
+      result,
+    );
+  }
+
+  @Get('deleted')
+  async findDeleted(
+    @Query() query: AcademicYearQueryDto,
+    @Res() res: Response,
+    @AuthUser() user: AuthUserPayload,
+  ) {
+    const result = await this.academicYearService.findDeleted(query, user);
+    return sendResponse<AcademicYearPaginatedResponseDto>(
+      res,
+      200,
+      'Deleted academic years retrieved successfully',
+      result,
+    );
+  }
+
+  @Post(':id/restore')
+  async restore(@Param('id') id: string, @Res() res: Response) {
+    const restored = await this.academicYearService.restore(Number(id));
+    return sendResponse<AcademicYearType>(
+      res,
+      200,
+      'Academic year restored successfully',
+      mappingAcademicYear(restored),
+    );
+  }
+
+  @Post(':id/set-active')
+  async setActive(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @AuthUser() user: AuthUserPayload,
+  ) {
+    const active = await this.academicYearService.setActive(Number(id), user);
+    return sendResponse<AcademicYearType>(
+      res,
+      200,
+      'Academic year set as active successfully',
+      mappingAcademicYear(active),
+    );
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    const item = await this.academicYearService.getById(Number(id));
+    return sendResponse<AcademicYearType>(
+      res,
+      200,
+      'Academic year retrieved successfully',
+      mappingAcademicYear(item!),
     );
   }
 
   @Post()
-  @Roles('Super Admin')
-  @UseGuards(RolesGuard)
   async create(
-    @Body() createAcademicYearDto: CreateAcademicYearDto,
+    @Body() dto: CreateAcademicYearDto,
     @Res() res: Response,
     @AuthUser() user: AuthUserPayload,
   ) {
-    const newAcademicYear = await this.academicYearService.create({
-      ...createAcademicYearDto,
-      school_id: user.school?.id ?? 0,
-      is_active: true,
-    });
-    return sendResponse(res, 201, 'Academic year created successfully', newAcademicYear);
+    const newAcademicYear = await this.academicYearService.create(dto, user);
+    return sendResponse<AcademicYearType>(
+      res,
+      201,
+      'Academic year created successfully',
+      mappingAcademicYear(newAcademicYear),
+    );
   }
 
-  @Patch()
-  @Roles('Super Admin')
-  @UseGuards(PolicyGuard, RolesGuard)
-  @Policy(AcademicYearPolicy, 'update', 'id', AcademicYearService)
-  async update(
-    @Body() updateAcademicYearDto: UpdateAcademicYearDto,
+  @Put(':id')
+  async updatePut(
+    @Param('id') id: string,
+    @Body() dto: UpdateAcademicYearDto,
     @Res() res: Response,
+    @AuthUser() user: AuthUserPayload,
   ) {
-    await this.academicYearService.update(updateAcademicYearDto);
-    return sendResponse(res, 200, 'Academic year updated successfully', null);
+    const updated = await this.academicYearService.update(
+      Number(id),
+      dto,
+      user,
+    );
+    return sendResponse<AcademicYearType>(
+      res,
+      200,
+      'Academic year updated successfully',
+      mappingAcademicYear(updated),
+    );
   }
 
-  @Delete()
-  @Roles('Super Admin')
-  @UseGuards(PolicyGuard, RolesGuard)
-  @Policy(AcademicYearPolicy, 'delete', 'id', AcademicYearService)
-  async delete(
-    @Body() deleteAcademicYearDto: DeleteAcademicYearDto,
+  @Patch(':id')
+  async updatePatch(
+    @Param('id') id: string,
+    @Body() dto: UpdateAcademicYearDto,
     @Res() res: Response,
+    @AuthUser() user: AuthUserPayload,
   ) {
-    await this.academicYearService.delete(deleteAcademicYearDto.id);
+    const updated = await this.academicYearService.update(
+      Number(id),
+      dto,
+      user,
+    );
+    return sendResponse<AcademicYearType>(
+      res,
+      200,
+      'Academic year updated successfully',
+      mappingAcademicYear(updated),
+    );
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string, @Res() res: Response) {
+    await this.academicYearService.delete(Number(id));
     return sendResponse(res, 200, 'Academic year deleted successfully', null);
   }
 }
